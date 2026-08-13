@@ -117,11 +117,13 @@ public class InterviewController {
     @GetMapping("/speak")
     public ResponseEntity<byte[]> speak(@RequestParam String text) {
         byte[] audioBytes = ttsService.generateSpeech(text);
+        if (audioBytes == null || audioBytes.length == 0) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.valueOf("audio/wav"));
         headers.setContentLength(audioBytes.length);
-        // Instruct browser to cache/handle response streaming
         headers.setCacheControl("max-age=86400");
         
         return new ResponseEntity<>(audioBytes, headers, HttpStatus.OK);

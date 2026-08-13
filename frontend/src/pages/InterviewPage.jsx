@@ -64,25 +64,61 @@ const InterviewPage = () => {
       audioRef.current.pause();
     }
 
+    // Stop any ongoing browser speech synthesis
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+
     const ttsUrl = `http://localhost:8080/api/interviews/speak?text=${encodeURIComponent(text)}`;
     const audio = new Audio(ttsUrl);
-    
+
+    let fallbackTriggered = false;
+
+    const playBrowserFallback = () => {
+      if (fallbackTriggered) return;
+      fallbackTriggered = true;
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95;
+        utterance.pitch = 1.0;
+        
+        // Select a natural English voice if available
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => (v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('Jenny')))) || voices.find(v => v.lang.startsWith('en'));
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+
+        utterance.onend = () => {
+          setIsPlayingAudio(false);
+        };
+        utterance.onerror = () => {
+          setIsPlayingAudio(false);
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        setIsPlayingAudio(false);
+      }
+    };
+
     audio.onended = () => {
       setIsPlayingAudio(false);
     };
 
-    audio.onerror = (e) => {
-      console.error('Audio playback failed', e);
-      setIsPlayingAudio(false);
-      // Browser autoplay policies might block it, but standard fallback to silent visual text is fine.
+    audio.onerror = () => {
+      console.warn('Backend audio unavailable or unconfigured. Falling back to Browser Web Speech API.');
+      playBrowserFallback();
     };
 
     audioRef.current = audio;
     
     // Play with fallback handling
     audio.play().catch((err) => {
-      console.warn('Audio play blocked or failed. Auto-play policy might require user action first.', err);
-      setIsPlayingAudio(false);
+      console.warn('Backend audio play blocked or unavailable. Falling back to Web Speech API.', err);
+      playBrowserFallback();
     });
   };
 

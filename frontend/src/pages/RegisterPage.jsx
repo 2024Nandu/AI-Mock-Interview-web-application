@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import { Sparkles, User, Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -20,7 +22,13 @@ const RegisterPage = () => {
 
     try {
       const response = await axios.post('http://localhost:8080/api/auth/register', formData);
-      navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
+      const { token, email, name, userId } = response.data;
+      if (token) {
+        login(token, email, name, userId);
+        navigate('/upload-resume');
+      } else {
+        navigate('/login');
+      }
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || 'Registration failed. Please check your inputs and try again.');
@@ -118,7 +126,7 @@ const RegisterPage = () => {
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                Register & Send OTP
+                Create Account
                 <ArrowRight className="w-4 h-4 transition group-hover:translate-x-0.5" />
               </>
             )}

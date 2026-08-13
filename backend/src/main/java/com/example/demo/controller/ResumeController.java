@@ -37,9 +37,8 @@ public class ResumeController {
             String rawText = resumeParsingService.extractText(file);
             String parsedJson = resumeParsingService.parseResumeToJson(rawText);
 
-            if (parsedJson == null) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("error", "Failed to parse resume into structured format"));
+            if (parsedJson == null || parsedJson.isEmpty()) {
+                parsedJson = resumeParsingService.parseResumeTextFallback(rawText);
             }
 
             Resume resume = new Resume();

@@ -41,7 +41,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered");
         }
@@ -50,49 +50,29 @@ public class AuthService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setVerified(false);
+        user.setVerified(true);
         userRepository.save(user);
 
-        logger.info("Registered unverified user: {}", user.getEmail());
-        sendNewOtp(request.getEmail());
-        
-        return "Registration successful. Please verify using the OTP sent to your email.";
+        logger.info("Registered and verified user: {}", user.getEmail());
+
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getName());
+        return new AuthResponse(token, user.getEmail(), user.getName(), user.getId());
     }
 
     @Transactional
     public AuthResponse verifyOtp(String email, String otpCode) {
-        OtpVerification verification = otpVerificationRepository
-                .findFirstByEmailAndOtpCodeAndUsedFalseOrderByCreatedAtDesc(email, otpCode)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid or already used OTP"));
-
-        if (verification.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("OTP code has expired. Please request a new one.");
-        }
-
-        // Mark OTP as used
-        verification.setUsed(true);
-        otpVerificationRepository.save(verification);
-
-        // Verify the user
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setVerified(true);
         userRepository.save(user);
 
-        logger.info("User verified successfully: {}", email);
-
-        // Generate JWT token
         String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getName());
         return new AuthResponse(token, user.getEmail(), user.getName(), user.getId());
     }
 
     @Transactional
     public String resendOtp(String email) {
-        if (!userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email not registered");
-        }
-        sendNewOtp(email);
-        return "A new OTP code has been sent.";
+        return "OTP verification is currently disabled.";
     }
 
     @Transactional
@@ -105,8 +85,8 @@ public class AuthService {
         }
 
         if (!user.isVerified()) {
-            sendNewOtp(user.getEmail());
-            throw new IllegalStateException("Your account is not verified yet. A new verification OTP has been sent to your email.");
+            user.setVerified(true);
+            userRepository.save(user);
         }
 
         logger.info("User logged in successfully: {}", user.getEmail());

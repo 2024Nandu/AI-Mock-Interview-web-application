@@ -29,8 +29,11 @@ public class EmailService {
         logger.info("OTP verification code for [{}]: {}", toEmail, otpCode);
         logger.info("==================================================");
 
-        if (senderEmail == null || senderEmail.trim().isEmpty()) {
-            logger.warn("Mail sender username not configured. Falling back to Console Logging.");
+        if (senderEmail == null || senderEmail.trim().isEmpty() 
+                || senderEmail.equalsIgnoreCase("YOUR_BREVO_USERNAME") 
+                || senderEmail.startsWith("YOUR_") 
+                || senderEmail.startsWith("your-")) {
+            logger.warn("Mail sender username not configured or set to placeholder. Skipping SMTP email send (Console logging active).");
             return;
         }
 

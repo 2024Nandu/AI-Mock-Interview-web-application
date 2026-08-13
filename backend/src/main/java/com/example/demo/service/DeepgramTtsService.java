@@ -22,6 +22,14 @@ public class DeepgramTtsService {
     private String apiUrl;
 
     public byte[] generateSpeech(String text) {
+        if (apiKey == null || apiKey.trim().isEmpty() 
+                || apiKey.equalsIgnoreCase("YOUR_DEEPGRAM_API_KEY") 
+                || apiKey.startsWith("YOUR_") 
+                || apiKey.startsWith("your-")) {
+            logger.warn("Deepgram API Key is unconfigured or placeholder. Skipping backend TTS (Frontend Web Speech API fallback active).");
+            return new byte[0];
+        }
+
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
