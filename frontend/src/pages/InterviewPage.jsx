@@ -69,7 +69,8 @@ const InterviewPage = () => {
       window.speechSynthesis.cancel();
     }
 
-    const ttsUrl = `http://localhost:8080/api/interviews/speak?text=${encodeURIComponent(text)}`;
+    const backendBaseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+    const ttsUrl = `${backendBaseUrl}/api/interviews/speak?text=${encodeURIComponent(text)}`;
     const audio = new Audio(ttsUrl);
 
     let fallbackTriggered = false;

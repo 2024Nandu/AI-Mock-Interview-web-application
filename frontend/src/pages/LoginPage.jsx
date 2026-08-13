@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
 import { Sparkles, Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 
@@ -21,7 +21,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', formData);
+      const response = await apiClient.post('/api/auth/login', formData);
       const { token, email, name, userId } = response.data;
       login(token, email, name, userId);
       navigate('/upload-resume');

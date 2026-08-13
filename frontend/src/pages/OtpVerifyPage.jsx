@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
 import { Sparkles, MailOpen, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react';
 
@@ -34,7 +34,7 @@ const OtpVerifyPage = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/verify-otp', { email, otp });
+      const response = await apiClient.post('/api/auth/verify-otp', { email, otp });
       const { token, email: verifiedEmail, name, userId } = response.data;
       login(token, verifiedEmail, name, userId);
       navigate('/upload-resume');
@@ -53,7 +53,7 @@ const OtpVerifyPage = () => {
     setResending(true);
 
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/resend-otp', { email });
+      const response = await apiClient.post('/api/auth/resend-otp', { email });
       setMessage(response.data?.message || 'A new OTP has been sent. Please check your email (or server log console).');
     } catch (err) {
       console.error(err);
