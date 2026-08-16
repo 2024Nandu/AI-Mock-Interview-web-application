@@ -61,4 +61,9 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage(), "unverified", true));
         }
     }
+
+    @GetMapping("/health")
+    public String healthChecking() {
+        return "Authentication server is running";
+    }
 }
