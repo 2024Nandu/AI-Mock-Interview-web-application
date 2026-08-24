@@ -6,7 +6,7 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.postgresql.Driver}
     hikari:
       connection-timeout: 10000
       initialization-fail-timeout: -1
@@ -17,7 +17,7 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
 
   servlet:
     multipart:
@@ -42,6 +42,9 @@ server:
 # Custom API Configurations
 
 app:
+  cors:
+    allowed-origins: ${FRONTEND_URL:http://localhost:5173,http://localhost:3000}
+
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: 86400000

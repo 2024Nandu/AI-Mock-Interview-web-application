@@ -42,7 +42,7 @@ public class FinalReport {
     private String modelAnswer;
 
     @Lob
-    @Column(name = "preparation_suggestions", columnDefinition = "LONGTEXT")
+    @Column(name = "preparation_suggestions", columnDefinition = "TEXT")
     private String preparationSuggestions; // JSON Array stored as text
 
     @Column(name = "closing_note", columnDefinition = "TEXT")

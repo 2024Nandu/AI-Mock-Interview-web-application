@@ -24,11 +24,11 @@ public class Resume {
     private String originalFilePath;
 
     @Lob
-    @Column(name = "raw_text", columnDefinition = "LONGTEXT")
+    @Column(name = "raw_text", columnDefinition = "TEXT")
     private String rawText;
 
     @Lob
-    @Column(name = "parsed_json", columnDefinition = "LONGTEXT")
+    @Column(name = "parsed_json", columnDefinition = "TEXT")
     private String parsedJson;
 
     @Column(name = "uploaded_at", nullable = false)
