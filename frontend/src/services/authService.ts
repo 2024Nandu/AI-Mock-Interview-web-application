@@ -61,7 +61,7 @@ export const authService = {
   // Login user
   login: async (data: LoginData): Promise<LoginResponse> => {
     const response = await api.post('/auth/login', data);
-    const { accessToken, refreshToken, user } = response.data;
+    const { accessToken, refreshToken } = response.data;
     
     console.log('🔐 Login response:', response.data);
     
@@ -75,7 +75,7 @@ export const authService = {
   // Verify OTP
   verifyOTP: async (data: OTPVerifyData): Promise<VerifyOtpResponse> => {
     const response = await api.post('/auth/otp/verify', data);
-    const { accessToken, refreshToken, user } = response.data;
+    const { accessToken, refreshToken } = response.data;
     
     console.log('✅ OTP verify response:', response.data);
     
