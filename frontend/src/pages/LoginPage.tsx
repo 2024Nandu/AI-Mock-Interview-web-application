@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, Briefcase } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,15 +20,11 @@ const LoginPage = () => {
     setError('');
     setIsLoading(true);
 
-    // TODO: Connect to backend API
-    // POST /api/v1/auth/login
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Login attempt:', { email, password });
-      // On success, redirect to dashboard
-    } catch (err) {
-      setError('Invalid email or password');
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
@@ -34,7 +33,6 @@ const LoginPage = () => {
   const handleSocialLogin = (provider: string) => {
     setPopupProvider(provider);
     setShowDevelopmentPopup(true);
-    // Auto-hide popup after 3 seconds
     setTimeout(() => {
       setShowDevelopmentPopup(false);
     }, 3000);

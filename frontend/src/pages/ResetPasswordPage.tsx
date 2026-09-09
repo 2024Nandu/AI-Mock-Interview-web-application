@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, ArrowRight, Briefcase, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { resetPassword } = useAuth();
   const email = location.state?.email || 'your email';
+  const otpCode = location.state?.otpCode || '';
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -41,22 +44,16 @@ const ResetPasswordPage = () => {
 
     setIsLoading(true);
 
-    // TODO: Connect to backend API
-    // POST /api/v1/auth/reset-password
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Reset Password:', { 
-        email, 
-        newPassword: formData.password 
-      });
+      await resetPassword(email, otpCode, formData.password);
       setSuccess(true);
       
       // Redirect to login after 2 seconds
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-    } catch (err) {
-      setError('Failed to reset password. Please try again.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to reset password. Please try again.');
     } finally {
       setIsLoading(false);
     }

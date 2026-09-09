@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, User, Briefcase} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -41,19 +43,12 @@ const RegisterPage = () => {
 
     setIsLoading(true);
 
-    // TODO: Connect to backend API
-    // POST /api/v1/auth/register
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Register attempt:', {
-        fullName: formData.fullName,
-        email: formData.email,
-        password: formData.password,
-      });
+      await register(formData.fullName, formData.email, formData.password);
       // On success, redirect to OTP verification
       navigate('/verify-otp', { state: { email: formData.email } });
-    } catch (err) {
-      setError('Registration failed. Please try again.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +57,6 @@ const RegisterPage = () => {
   const handleSocialSignup = (provider: string) => {
     setPopupProvider(provider);
     setShowDevelopmentPopup(true);
-    // Auto-hide popup after 3 seconds
     setTimeout(() => {
       setShowDevelopmentPopup(false);
     }, 3000);
@@ -76,7 +70,7 @@ const RegisterPage = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative"
       >
-        {/* Development Popup - Positioned at top of form */}
+        {/* Development Popup */}
         <AnimatePresence>
           {showDevelopmentPopup && (
             <motion.div

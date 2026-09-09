@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, ArrowRight, Briefcase, CheckCircle, XCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
+  const { forgotPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,19 +24,16 @@ const ForgotPasswordPage = () => {
 
     setIsLoading(true);
 
-    // TODO: Connect to backend API
-    // POST /api/v1/auth/forgot-password
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Forgot Password:', { email });
+      await forgotPassword(email);
       setSuccess(true);
       
       // Redirect to OTP verification after 2 seconds
       setTimeout(() => {
         navigate('/verify-otp', { state: { email, isPasswordReset: true } });
       }, 2000);
-    } catch (err) {
-      setError('Failed to send reset link. Please try again.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to send reset link. Please try again.');
     } finally {
       setIsLoading(false);
     }
