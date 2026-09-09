@@ -4,7 +4,6 @@ import {
   FileSearch, 
   Mic, 
   Award,
-  CheckCircle,
   ArrowRight
 } from 'lucide-react';
 
@@ -71,7 +70,7 @@ const HowItWorks = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
           {/* Connecting Line */}
           <div className="hidden lg:block absolute top-1/3 left-0 w-full h-0.5 bg-green-200 -translate-y-1/2">
-            <div className="w-full h-full bg-gradient-to-r from-green-400 to-green-600" />
+            <div className="w-full h-full bg-linear-to-r from-green-400 to-green-600" />
           </div>
 
           {steps.map((step, index) => (

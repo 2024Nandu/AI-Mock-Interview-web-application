@@ -77,7 +77,7 @@ const FAQ = () => {
                 <span className="text-lg font-semibold text-gray-900 pr-8">
                   {faq.question}
                 </span>
-                <span className="flex-shrink-0 ml-4">
+                <span className="shrink-0 ml-4">
                   {openIndex === index ? (
                     <Minus className="w-5 h-5 text-green-600" />
                   ) : (

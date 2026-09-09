@@ -5,9 +5,7 @@ import {
   Mic, 
   BarChart3, 
   Clock, 
-  Award,
-  Shield,
-  Users
+  Award
 } from 'lucide-react';
 
 const Features = () => {
@@ -133,7 +131,7 @@ const Features = () => {
 
               {/* Hover Gradient Border */}
               <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-green-500/10 to-emerald-500/10" />
+                <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-green-500/10 to-emerald-500/10" />
               </div>
             </motion.div>
           ))}
