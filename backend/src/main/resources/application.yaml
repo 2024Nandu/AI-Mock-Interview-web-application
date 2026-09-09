@@ -52,7 +52,7 @@ app:
   groq:
     api-key: ${GROQ_API_KEY}
     api-url: ${GROQ_API_URL:https://api.groq.com/openai/v1/chat/completions}
-    model: ${GROQ_MODEL:llama-3.1-8b-instant}
+    model: ${GROQ_MODEL:openai/gpt-oss-120b}
 
   deepgram:
     api-key: ${DEEPGRAM_API_KEY}
