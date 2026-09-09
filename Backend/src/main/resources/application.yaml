@@ -38,6 +38,11 @@ spring:
       allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
       max-age: ${CORS_MAX_AGE:3600}
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 jwt:
   secret: ${JWT_SECRET:9a4f2c8d7b6e5a4f3c2b1a0d9e8f7c6b5a4f3c2b1a0d9e8f7c6b5a4f3c2b1a0d}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
@@ -51,3 +56,13 @@ app:
     same-site: ${COOKIE_SAME_SITE:Lax}
     domain: ${COOKIE_DOMAIN:}
     max-age-seconds: ${COOKIE_MAX_AGE:86400}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
+groq:
+  api-key: ${GROQ_API_KEY}
+  api-url: ${GROQ_API_URL:https://api.groq.com/openai/v1/chat/completions}
+  api-model: ${GROQ_API_MODEL:openai/gpt-oss-120b}

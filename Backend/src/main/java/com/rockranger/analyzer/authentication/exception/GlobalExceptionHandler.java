@@ -84,6 +84,60 @@ public class GlobalExceptionHandler {
                 .body(Map.of("status", "error", "message", ex.getMessage()));
     }
 
+    @ExceptionHandler(com.rockranger.analyzer.resume.exception.ResumeNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleResumeNotFound(com.rockranger.analyzer.resume.exception.ResumeNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("status", "error", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.rockranger.analyzer.resume.exception.ResumeAnalysisNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleResumeAnalysisNotFound(com.rockranger.analyzer.resume.exception.ResumeAnalysisNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("status", "error", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.rockranger.analyzer.ai.exception.AiServiceException.class)
+    public ResponseEntity<Map<String, String>> handleAiServiceException(com.rockranger.analyzer.ai.exception.AiServiceException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("status", "error", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.rockranger.analyzer.resume.exception.InvalidFileException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidFile(com.rockranger.analyzer.resume.exception.InvalidFileException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("status", "error", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.rockranger.analyzer.resume.exception.CloudinaryUploadException.class)
+    public ResponseEntity<Map<String, String>> handleCloudinaryUpload(com.rockranger.analyzer.resume.exception.CloudinaryUploadException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("status", "error", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, String>> handleMaxUploadSize(org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(Map.of("status", "error", "message", "File size exceeds the maximum limit of 10MB."));
+    }
+
+    @ExceptionHandler(com.rockranger.analyzer.interview.exception.InterviewNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleInterviewNotFound(com.rockranger.analyzer.interview.exception.InterviewNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("status", "error", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.rockranger.analyzer.interview.exception.QuestionNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleQuestionNotFound(com.rockranger.analyzer.interview.exception.QuestionNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("status", "error", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.rockranger.analyzer.interview.exception.InterviewAlreadyCompletedException.class)
+    public ResponseEntity<Map<String, String>> handleInterviewAlreadyCompleted(com.rockranger.analyzer.interview.exception.InterviewAlreadyCompletedException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("status", "error", "message", ex.getMessage()));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

@@ -375,6 +375,551 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Resumes",
+      "item": [
+        {
+          "name": "11. Upload Resume (Cloudinary & Text Extraction)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set('resumeId', jsonData.id);",
+                  "    console.log('Saved resumeId: ' + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "Upload a .pdf, .docx, or .txt resume file"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resumes/upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "resumes",
+                "upload"
+              ]
+            },
+            "description": "Uploads a resume file to Cloudinary, extracts textual content via Apache PDFBox/POI, and saves the record in PostgreSQL."
+          },
+          "response": []
+        },
+        {
+          "name": "12. Get All Resumes",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resumes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "resumes"
+              ]
+            },
+            "description": "Fetches all resumes belonging to the currently authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "13. Get Resume by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resumes/{{resumeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "resumes",
+                "{{resumeId}}"
+              ]
+            },
+            "description": "Retrieves the details and extracted text of a single resume by its ID."
+          },
+          "response": []
+        },
+        {
+          "name": "14. Delete Resume by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resumes/{{resumeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "resumes",
+                "{{resumeId}}"
+              ]
+            },
+            "description": "Deletes the resume record from PostgreSQL and removes the stored file from Cloudinary."
+          },
+          "response": []
+        },
+        {
+          "name": "15. Analyze Resume (Groq AI)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resumes/{{resumeId}}/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "resumes",
+                "{{resumeId}}",
+                "analyze"
+              ]
+            },
+            "description": "Sends the extracted resume text to Groq AI to parse structured resume data (candidate info, categorized skills, experience, projects, education) and generate comprehensive ATS analysis (strengths, weaknesses, improvements, section scores, and overall score)."
+          },
+          "response": []
+        },
+        {
+          "name": "16. Get Resume Analysis",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resumes/{{resumeId}}/analysis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "resumes",
+                "{{resumeId}}",
+                "analysis"
+              ]
+            },
+            "description": "Retrieves the saved structured resume data and ATS analysis for the specified resume."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Interviews",
+      "item": [
+        {
+          "name": "17. Start Interview (Groq AI Questions)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.id) {",
+                  "        pm.collectionVariables.set(\"interviewId\", json.id);",
+                  "        console.log(\"Saved interviewId:\", json.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resumeId\": {{resumeId}},\n  \"numberOfQuestions\": 10,\n  \"interviewType\": \"TECHNICAL\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews"
+              ]
+            },
+            "description": "Starts an interview session by generating 10 personalized, resume-grounded questions using Groq AI."
+          },
+          "response": []
+        },
+        {
+          "name": "18. Get Current Question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.questionId) {",
+                  "        pm.collectionVariables.set(\"questionId\", json.questionId);",
+                  "        console.log(\"Saved questionId:\", json.questionId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews/{{interviewId}}/current-question",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews",
+                "{{interviewId}}",
+                "current-question"
+              ]
+            },
+            "description": "Retrieves the current active question for the interview session."
+          },
+          "response": []
+        },
+        {
+          "name": "19. Submit Answer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionId\": {{questionId}},\n  \"answer\": \"In Spring Boot, autoconfiguration works via @EnableAutoConfiguration which scans META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports and conditionally registers beans based on @ConditionalOnClass and @ConditionalOnMissingBean annotations.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews/{{interviewId}}/answers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews",
+                "{{interviewId}}",
+                "answers"
+              ]
+            },
+            "description": "Submits candidate text answer, evaluates it immediately with Groq AI, and returns scoring and feedback."
+          },
+          "response": []
+        },
+        {
+          "name": "20. Next Question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.questionId) {",
+                  "        pm.collectionVariables.set(\"questionId\", json.questionId);",
+                  "        console.log(\"Updated questionId to:\", json.questionId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews/{{interviewId}}/next",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews",
+                "{{interviewId}}",
+                "next"
+              ]
+            },
+            "description": "Advances to the next interview question."
+          },
+          "response": []
+        },
+        {
+          "name": "21. Complete Interview (Final Evaluation)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews/{{interviewId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews",
+                "{{interviewId}}",
+                "complete"
+              ]
+            },
+            "description": "Completes the interview, evaluates the overall performance with Groq AI, and generates the final scorecard."
+          },
+          "response": []
+        },
+        {
+          "name": "22. Get Interview Result",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews/{{interviewId}}/result",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews",
+                "{{interviewId}}",
+                "result"
+              ]
+            },
+            "description": "Retrieves the complete scorecard, multi-dimensional scores, feedback, strengths, and answered questions."
+          },
+          "response": []
+        },
+        {
+          "name": "23. Get All User Interviews",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews"
+              ]
+            },
+            "description": "Returns all interview sessions belonging to the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "24. Get Interview by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews/{{interviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews",
+                "{{interviewId}}"
+              ]
+            },
+            "description": "Retrieves the status, question count, and metadata of a specific interview session."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
@@ -405,6 +950,18 @@
     {
       "key": "refreshToken",
       "value": ""
+    },
+    {
+      "key": "resumeId",
+      "value": "1"
+    },
+    {
+      "key": "interviewId",
+      "value": "1"
+    },
+    {
+      "key": "questionId",
+      "value": "1"
     }
   ]
 }

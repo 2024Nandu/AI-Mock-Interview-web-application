@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, User, Briefcase} from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const RegisterPage = () => {
-  const navigate = useNavigate();
   const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -29,13 +28,11 @@ const RegisterPage = () => {
     e.preventDefault();
     setError('');
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    // Validate password strength
     if (formData.password.length < 8) {
       setError('Password must be at least 8 characters');
       return;
@@ -45,8 +42,7 @@ const RegisterPage = () => {
 
     try {
       await register(formData.fullName, formData.email, formData.password);
-      // On success, redirect to OTP verification
-      navigate('/verify-otp', { state: { email: formData.email } });
+      // PublicRoute will handle redirect to verify-otp
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
@@ -70,7 +66,6 @@ const RegisterPage = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative"
       >
-        {/* Development Popup */}
         <AnimatePresence>
           {showDevelopmentPopup && (
             <motion.div
@@ -91,7 +86,6 @@ const RegisterPage = () => {
           )}
         </AnimatePresence>
 
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
             <div className="bg-green-600 p-2 rounded-lg">
@@ -105,10 +99,8 @@ const RegisterPage = () => {
           <p className="text-gray-600 mt-2">Start your interview preparation journey</p>
         </div>
 
-        {/* Register Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Full Name Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Full Name
@@ -127,7 +119,6 @@ const RegisterPage = () => {
               </div>
             </div>
 
-            {/* Email Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -146,7 +137,6 @@ const RegisterPage = () => {
               </div>
             </div>
 
-            {/* Password Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
@@ -175,7 +165,6 @@ const RegisterPage = () => {
               </p>
             </div>
 
-            {/* Confirm Password Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm Password
@@ -201,7 +190,6 @@ const RegisterPage = () => {
               </div>
             </div>
 
-            {/* Error Message */}
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -212,7 +200,6 @@ const RegisterPage = () => {
               </motion.div>
             )}
 
-            {/* Terms Checkbox */}
             <div className="flex items-start gap-2">
               <input
                 type="checkbox"
@@ -232,7 +219,6 @@ const RegisterPage = () => {
               </label>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
@@ -252,7 +238,6 @@ const RegisterPage = () => {
             </button>
           </form>
 
-          {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200" />
@@ -262,7 +247,6 @@ const RegisterPage = () => {
             </div>
           </div>
 
-          {/* Social Signup */}
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => handleSocialSignup('Google')}
@@ -280,7 +264,6 @@ const RegisterPage = () => {
             </button>
           </div>
 
-          {/* Login Link */}
           <p className="text-center text-gray-600 mt-6">
             Already have an account?{' '}
             <Link to="/login" className="text-green-600 font-medium hover:text-green-700">

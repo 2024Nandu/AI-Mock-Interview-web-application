@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, Briefcase } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -16,15 +15,14 @@ const LoginPage = () => {
   const [popupProvider, setPopupProvider] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // ✅ Prevent page refresh
+    e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+      // PublicRoute will handle redirect to dashboard
     } catch (err: any) {
-      // ✅ Show specific error message from backend
       const errorMessage = err.response?.data?.message || 'Invalid email or password';
       setError(errorMessage);
       console.error('Login error:', err);
@@ -49,7 +47,6 @@ const LoginPage = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative"
       >
-        {/* Development Popup */}
         {showDevelopmentPopup && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: -20 }}
@@ -67,7 +64,6 @@ const LoginPage = () => {
           </motion.div>
         )}
 
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
             <div className="bg-green-600 p-2 rounded-lg">
@@ -81,10 +77,8 @@ const LoginPage = () => {
           <p className="text-gray-600 mt-2">Sign in to continue your interview preparation</p>
         </div>
 
-        {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -102,7 +96,6 @@ const LoginPage = () => {
               </div>
             </div>
 
-            {/* Password Field */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-gray-700">
@@ -135,7 +128,6 @@ const LoginPage = () => {
               </div>
             </div>
 
-            {/* Error Message */}
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -146,7 +138,6 @@ const LoginPage = () => {
               </motion.div>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
@@ -166,7 +157,6 @@ const LoginPage = () => {
             </button>
           </form>
 
-          {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200" />
@@ -176,7 +166,6 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {/* Social Login */}
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => handleSocialLogin('Google')}
@@ -194,7 +183,6 @@ const LoginPage = () => {
             </button>
           </div>
 
-          {/* Register Link */}
           <p className="text-center text-gray-600 mt-6">
             Don't have an account?{' '}
             <Link to="/register" className="text-green-600 font-medium hover:text-green-700">
