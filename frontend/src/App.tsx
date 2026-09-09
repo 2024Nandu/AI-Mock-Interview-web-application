@@ -8,17 +8,24 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyOTPPage from './pages/VerifyOTPPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import DashboardPage from './pages/dashboard/DashboardPage';
+import DashboardLayout from './pages/dashboard/DashboardLayout';
+import DashboardHome from './pages/dashboard/DashboardHome';
+import ResumeUpload from './pages/dashboard/ResumeUpload';
+import ResumeList from './pages/dashboard/ResumeList';
+import ResumeAnalysisPage from './pages/dashboard/ResumeAnalysis';
+import InterviewList from './pages/dashboard/InterviewList';
+import NewInterview from './pages/dashboard/NewInterview';
+import InterviewSession from './pages/dashboard/InterviewSession';
+import ResultsList from './pages/dashboard/ResultsList';
+import ResultDetail from './pages/dashboard/ResultDetail';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes - Anyone can access */}
+          {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
-          
-          {/* Auth Routes - Redirect to dashboard if already logged in */}
           <Route 
             path="/login" 
             element={
@@ -60,15 +67,25 @@ function App() {
             } 
           />
           
-          {/* Protected Routes - Redirect to login if not authenticated */}
+          {/* Protected Dashboard Routes */}
           <Route 
             path="/dashboard" 
             element={
               <ProtectedRoute>
-                <DashboardPage />
+                <DashboardLayout />
               </ProtectedRoute>
-            } 
-          />
+            }
+          >
+            <Route index element={<DashboardHome />} />
+            <Route path="resume/upload" element={<ResumeUpload />} />
+            <Route path="resumes" element={<ResumeList />} />
+            <Route path="resume/:id/analysis" element={<ResumeAnalysisPage />} />
+            <Route path="interviews" element={<InterviewList />} />
+            <Route path="interview/new" element={<NewInterview />} />
+            <Route path="interview/:id" element={<InterviewSession />} />
+            <Route path="results" element={<ResultsList />} />
+            <Route path="result/:id" element={<ResultDetail />} />
+          </Route>
         </Routes>
       </Router>
     </AuthProvider>

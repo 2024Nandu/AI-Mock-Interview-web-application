@@ -27,6 +27,10 @@ import com.rockranger.analyzer.resume.exception.ResumeAnalysisNotFoundException;
 import com.rockranger.analyzer.resume.exception.ResumeNotFoundException;
 import com.rockranger.analyzer.resume.repository.ResumeAnalysisRepository;
 import com.rockranger.analyzer.resume.repository.ResumeRepository;
+import com.rockranger.analyzer.interview.report.InterviewReportService;
+import com.rockranger.analyzer.voice.dto.response.SpeechToTextResponse;
+import com.rockranger.analyzer.voice.service.SpeechToTextService;
+import com.rockranger.analyzer.voice.service.TextToSpeechService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +38,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -66,6 +71,15 @@ class InterviewServiceTest {
 
     @Mock
     private AiService aiService;
+
+    @Mock
+    private SpeechToTextService speechToTextService;
+
+    @Mock
+    private TextToSpeechService textToSpeechService;
+
+    @Mock
+    private InterviewReportService interviewReportService;
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -281,5 +295,105 @@ class InterviewServiceTest {
 
         verify(interviewResultRepository).save(any(InterviewResult.class));
         verify(interviewRepository).save(testInterview);
+    }
+
+    @Test
+    void submitVoiceAnswer_Success() {
+        InterviewQuestion question = new InterviewQuestion();
+        question.setId(50L);
+        question.setQuestionNumber(1);
+        question.setQuestion("Explain Dependency Injection");
+        question.setInterview(testInterview);
+
+        MockMultipartFile audioFile = new MockMultipartFile(
+                "audio",
+                "answer.wav",
+                "audio/wav",
+                "RIFFmockwavdata".getBytes()
+        );
+
+        when(speechToTextService.transcribe(audioFile))
+                .thenReturn(new SpeechToTextResponse("Dependency injection is an IoC pattern."));
+
+        when(interviewRepository.findByIdAndUser(100L, testUser))
+                .thenReturn(Optional.of(testInterview));
+        when(interviewQuestionRepository.findById(50L))
+                .thenReturn(Optional.of(question));
+        when(resumeAnalysisRepository.findByResume(testResume))
+                .thenReturn(Optional.of(testAnalysis));
+
+        AnswerEvaluationAiResponse aiEval = new AnswerEvaluationAiResponse(
+                88, 9, 8, 9,
+                "Strong explanation.",
+                "Better answer example"
+        );
+        when(aiService.evaluateAnswer(anyString(), anyString(), anyString()))
+                .thenReturn(aiEval);
+
+        InterviewAnswer savedAnswer = new InterviewAnswer();
+        savedAnswer.setQuestion(question);
+        when(interviewAnswerRepository.findByQuestionId(50L))
+                .thenReturn(Optional.of(savedAnswer));
+
+        AnswerEvaluationResponse response = interviewService.submitVoiceAnswer(100L, 50L, audioFile, testUser);
+
+        assertNotNull(response);
+        assertEquals(88, response.getScore());
+        assertEquals("Dependency injection is an IoC pattern.", response.getAnswerText());
+        assertEquals("VOICE", savedAnswer.getAnswerType());
+        verify(speechToTextService).transcribe(audioFile);
+    }
+
+    @Test
+    void speakCurrentQuestion_Success() {
+        InterviewQuestion question = new InterviewQuestion();
+        question.setId(50L);
+        question.setQuestionNumber(1);
+        question.setQuestion("Explain Dependency Injection");
+        question.setInterview(testInterview);
+
+        when(interviewRepository.findByIdAndUser(100L, testUser))
+                .thenReturn(Optional.of(testInterview));
+        when(interviewQuestionRepository.findByInterviewIdAndQuestionNumber(100L, 1))
+                .thenReturn(Optional.of(question));
+        when(interviewAnswerRepository.findByQuestionId(50L))
+                .thenReturn(Optional.empty());
+
+        byte[] fakeWav = "RIFFwavheader".getBytes();
+        when(textToSpeechService.synthesizeSpeech("Explain Dependency Injection"))
+                .thenReturn(fakeWav);
+
+        byte[] audioResult = interviewService.speakCurrentQuestion(100L, testUser);
+
+        assertNotNull(audioResult);
+        assertArrayEquals(fakeWav, audioResult);
+        verify(textToSpeechService).synthesizeSpeech("Explain Dependency Injection");
+    }
+
+    @Test
+    void generateInterviewReportPdf_Success() {
+        InterviewResult result = new InterviewResult();
+        result.setId(200L);
+        result.setInterview(testInterview);
+        result.setOverallScore(90);
+
+        when(interviewRepository.findByIdAndUser(100L, testUser))
+                .thenReturn(Optional.of(testInterview));
+        when(interviewResultRepository.findByInterviewId(100L))
+                .thenReturn(Optional.of(result));
+        when(interviewQuestionRepository.findByInterviewIdOrderByQuestionNumber(100L))
+                .thenReturn(List.of());
+        when(interviewAnswerRepository.findByQuestionInterviewIdOrderByQuestionQuestionNumber(100L))
+                .thenReturn(List.of());
+
+        byte[] mockPdf = "%PDF-1.4 mock".getBytes();
+        when(interviewReportService.generatePdfReport(eq(testInterview), eq(result), anyList(), anyList(), eq(testUser)))
+                .thenReturn(mockPdf);
+
+        byte[] pdfResult = interviewService.generateInterviewReportPdf(100L, testUser);
+
+        assertNotNull(pdfResult);
+        assertArrayEquals(mockPdf, pdfResult);
+        verify(interviewReportService).generatePdfReport(eq(testInterview), eq(result), anyList(), anyList(), eq(testUser));
     }
 }

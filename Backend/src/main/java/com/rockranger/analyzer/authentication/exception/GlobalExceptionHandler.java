@@ -138,6 +138,12 @@ public class GlobalExceptionHandler {
                 .body(Map.of("status", "error", "message", ex.getMessage()));
     }
 
+    @ExceptionHandler(com.rockranger.analyzer.voice.exception.AudioProcessingException.class)
+    public ResponseEntity<Map<String, String>> handleAudioProcessingException(com.rockranger.analyzer.voice.exception.AudioProcessingException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("status", "error", "message", ex.getMessage()));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

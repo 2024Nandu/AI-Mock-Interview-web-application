@@ -13,6 +13,7 @@ public class ResumeResponse {
     private String extractedText;
     private int extractedTextLength;
     private LocalDateTime uploadedAt;
+    private String status;  // ✅ ADD THIS FIELD
 
     public ResumeResponse() {
     }
@@ -27,6 +28,8 @@ public class ResumeResponse {
         response.setExtractedText(resume.getExtractedText());
         response.setExtractedTextLength(resume.getExtractedText() != null ? resume.getExtractedText().length() : 0);
         response.setUploadedAt(resume.getUploadedAt());
+        // ✅ SET STATUS BASED ON WHETHER ANALYSIS EXISTS
+        response.setStatus(resume.getAnalysis() != null ? "ANALYZED" : "PENDING");
         return response;
     }
 
@@ -92,5 +95,14 @@ public class ResumeResponse {
 
     public void setUploadedAt(LocalDateTime uploadedAt) {
         this.uploadedAt = uploadedAt;
+    }
+
+    // ✅ ADD GETTER AND SETTER FOR STATUS
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -27,4 +27,10 @@ public interface InterviewService {
     List<InterviewResponse> getAllInterviews(User user);
 
     InterviewResponse getInterviewById(Long interviewId, User user);
+
+    AnswerEvaluationResponse submitVoiceAnswer(Long interviewId, Long questionId, org.springframework.web.multipart.MultipartFile audioFile, User user);
+
+    byte[] speakCurrentQuestion(Long interviewId, User user);
+
+    byte[] generateInterviewReportPdf(Long interviewId, User user);
 }

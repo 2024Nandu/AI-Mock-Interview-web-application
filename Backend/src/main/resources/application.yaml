@@ -66,3 +66,8 @@ groq:
   api-key: ${GROQ_API_KEY}
   api-url: ${GROQ_API_URL:https://api.groq.com/openai/v1/chat/completions}
   api-model: ${GROQ_API_MODEL:openai/gpt-oss-120b}
+  stt-url: ${GROQ_STT_URL:https://api.groq.com/openai/v1/audio/transcriptions}
+  stt-model: ${GROQ_STT_MODEL:whisper-large-v3-turbo}
+  tts-url: ${GROQ_TTS_URL:https://api.groq.com/openai/v1/audio/speech}
+  tts-model: ${GROQ_TTS_MODEL:canopylabs/orpheus-v1-english}
+  tts-voice: ${GROQ_TTS_VOICE:hannah}

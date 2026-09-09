@@ -918,6 +918,208 @@
             "description": "Retrieves the status, question count, and metadata of a specific interview session."
           },
           "response": []
+        },
+        {
+          "name": "25. Submit Voice Answer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "questionId",
+                  "value": "{{questionId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "Candidate voice audio recording (.wav, .mp3, .m4a, .webm)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews/{{interviewId}}/answers/voice",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews",
+                "{{interviewId}}",
+                "answers",
+                "voice"
+              ]
+            },
+            "description": "Uploads candidate spoken answer audio, transcribes with Groq Whisper, evaluates with Groq GPT-OSS 120B, and returns scoring and feedback."
+          },
+          "response": []
+        },
+        {
+          "name": "26. Speak Current Question (Audio WAV)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews/{{interviewId}}/current-question/speak",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews",
+                "{{interviewId}}",
+                "current-question",
+                "speak"
+              ]
+            },
+            "description": "Synthesizes and streams the current interview question as a WAV audio file using Groq Orpheus V1 English."
+          },
+          "response": []
+        },
+        {
+          "name": "27. Download Interview PDF Report",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews/{{interviewId}}/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews",
+                "{{interviewId}}",
+                "report"
+              ]
+            },
+            "description": "Generates and downloads a multi-page executive PDF report containing the scorecard, strengths, improvements, and question-by-question breakdown."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Voice AI (STT & TTS)",
+      "item": [
+        {
+          "name": "28. Transcribe Audio (Groq Whisper STT)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "Audio file to transcribe (.wav, .mp3, .m4a, .webm)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/voice/transcribe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "voice",
+                "transcribe"
+              ]
+            },
+            "description": "Transcribes candidate audio to text using Groq Whisper Large V3 Turbo."
+          },
+          "response": []
+        },
+        {
+          "name": "29. Synthesize Speech (Groq Orpheus TTS)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Explain dependency injection in Spring Boot.\",\n  \"voice\": \"hannah\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/voice/speak",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "voice",
+                "speak"
+              ]
+            },
+            "description": "Converts interview question text into spoken WAV audio using Groq Canopy Labs Orpheus V1 English."
+          },
+          "response": []
         }
       ]
     }

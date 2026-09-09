@@ -28,10 +28,16 @@ import com.rockranger.analyzer.resume.exception.ResumeAnalysisNotFoundException;
 import com.rockranger.analyzer.resume.exception.ResumeNotFoundException;
 import com.rockranger.analyzer.resume.repository.ResumeAnalysisRepository;
 import com.rockranger.analyzer.resume.repository.ResumeRepository;
+import com.rockranger.analyzer.interview.report.InterviewReportService;
+import com.rockranger.analyzer.voice.dto.response.SpeechToTextResponse;
+import com.rockranger.analyzer.voice.exception.AudioProcessingException;
+import com.rockranger.analyzer.voice.service.SpeechToTextService;
+import com.rockranger.analyzer.voice.service.TextToSpeechService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -50,6 +56,9 @@ public class InterviewServiceImpl implements InterviewService {
     private final ResumeAnalysisRepository resumeAnalysisRepository;
     private final AiService aiService;
     private final ObjectMapper objectMapper;
+    private final SpeechToTextService speechToTextService;
+    private final TextToSpeechService textToSpeechService;
+    private final InterviewReportService interviewReportService;
 
     public InterviewServiceImpl(
             InterviewRepository interviewRepository,
@@ -59,7 +68,10 @@ public class InterviewServiceImpl implements InterviewService {
             ResumeRepository resumeRepository,
             ResumeAnalysisRepository resumeAnalysisRepository,
             AiService aiService,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            SpeechToTextService speechToTextService,
+            TextToSpeechService textToSpeechService,
+            InterviewReportService interviewReportService
     ) {
         this.interviewRepository = interviewRepository;
         this.interviewQuestionRepository = interviewQuestionRepository;
@@ -69,6 +81,9 @@ public class InterviewServiceImpl implements InterviewService {
         this.resumeAnalysisRepository = resumeAnalysisRepository;
         this.aiService = aiService;
         this.objectMapper = objectMapper;
+        this.speechToTextService = speechToTextService;
+        this.textToSpeechService = textToSpeechService;
+        this.interviewReportService = interviewReportService;
     }
 
     @Override
@@ -378,5 +393,56 @@ public class InterviewServiceImpl implements InterviewService {
                 answerResponses,
                 result.getCompletedAt()
         );
+    }
+
+    @Override
+    @Transactional
+    public AnswerEvaluationResponse submitVoiceAnswer(Long interviewId, Long questionId, MultipartFile audioFile, User user) {
+        if (audioFile == null || audioFile.isEmpty()) {
+            throw new AudioProcessingException("Audio file is required to submit a voice answer.");
+        }
+
+        SpeechToTextResponse sttResponse = speechToTextService.transcribe(audioFile);
+        String transcribedText = sttResponse.getText();
+
+        if (transcribedText == null || transcribedText.isBlank()) {
+            throw new AudioProcessingException("Could not transcribe any speech from the provided audio file.");
+        }
+
+        SubmitAnswerRequest request = new SubmitAnswerRequest();
+        request.setQuestionId(questionId);
+        request.setAnswer(transcribedText);
+
+        AnswerEvaluationResponse evaluation = submitAnswer(interviewId, request, user);
+
+        // Update answerType to "VOICE"
+        interviewAnswerRepository.findByQuestionId(questionId).ifPresent(answer -> {
+            answer.setAnswerType("VOICE");
+            interviewAnswerRepository.save(answer);
+        });
+
+        return evaluation;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] speakCurrentQuestion(Long interviewId, User user) {
+        QuestionResponse question = getCurrentQuestion(interviewId, user);
+        return textToSpeechService.synthesizeSpeech(question.getQuestion());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] generateInterviewReportPdf(Long interviewId, User user) {
+        Interview interview = interviewRepository.findByIdAndUser(interviewId, user)
+                .orElseThrow(() -> new InterviewNotFoundException("Interview not found with id: " + interviewId));
+
+        InterviewResult result = interviewResultRepository.findByInterviewId(interviewId)
+                .orElseThrow(() -> new RuntimeException("Interview result not found for interview " + interviewId + ". Please complete the interview before generating a report."));
+
+        List<InterviewQuestion> questions = interviewQuestionRepository.findByInterviewIdOrderByQuestionNumber(interviewId);
+        List<InterviewAnswer> answers = interviewAnswerRepository.findByQuestionInterviewIdOrderByQuestionQuestionNumber(interviewId);
+
+        return interviewReportService.generatePdfReport(interview, result, questions, answers, user);
     }
 }

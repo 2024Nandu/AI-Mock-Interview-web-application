@@ -9,10 +9,13 @@ import com.rockranger.analyzer.interview.dto.response.InterviewResultResponse;
 import com.rockranger.analyzer.interview.dto.response.QuestionResponse;
 import com.rockranger.analyzer.interview.service.InterviewService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -79,6 +82,43 @@ public class InterviewController {
     ) {
         InterviewResultResponse response = interviewService.getInterviewResult(id, user);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(value = "/{id}/answers/voice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AnswerEvaluationResponse> submitVoiceAnswer(
+            @PathVariable Long id,
+            @RequestParam("questionId") Long questionId,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "audio", required = false) MultipartFile audio,
+            @AuthenticationPrincipal User user
+    ) {
+        MultipartFile targetFile = file != null ? file : audio;
+        AnswerEvaluationResponse response = interviewService.submitVoiceAnswer(id, questionId, targetFile, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(value = "/{id}/current-question/speak", produces = "audio/wav")
+    public ResponseEntity<byte[]> speakCurrentQuestion(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user
+    ) {
+        byte[] audio = interviewService.speakCurrentQuestion(id, user);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"question-" + id + ".wav\"")
+                .contentType(MediaType.parseMediaType("audio/wav"))
+                .body(audio);
+    }
+
+    @GetMapping(value = "/{id}/report", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getInterviewReport(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user
+    ) {
+        byte[] pdfReport = interviewService.generateInterviewReportPdf(id, user);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"mock-interview-report-" + id + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfReport);
     }
 
     @GetMapping

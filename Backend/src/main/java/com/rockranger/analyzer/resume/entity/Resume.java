@@ -48,6 +48,12 @@ public class Resume {
         }
     }
 
+    // ✅ ADD HELPER METHOD TO CHECK IF ANALYZED
+    public boolean isAnalyzed() {
+        return analysis != null;
+    }
+
+    // Getters and Setters...
     public Long getId() {
         return id;
     }
