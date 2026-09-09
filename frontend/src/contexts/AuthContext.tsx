@@ -1,13 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import authService from '../services/authService';
-
-interface User {
-  id: string;
-  fullName: string;
-  email: string;
-  emailVerified: boolean;
-}
+import type { User } from '../services/authService';
 
 interface AuthContextType {
   user: User | null;
@@ -41,19 +35,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is authenticated on mount
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('accessToken');
-      if (token) {
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      console.log('🔍 Checking auth - Token exists:', !!token);
+      console.log('🔍 Checking auth - RefreshToken exists:', !!refreshToken);
+      
+      if (token && refreshToken) {
         try {
-          const response = await authService.getCurrentUser();
-          setUser(response.user);
-        } catch (error) {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          setUser(null);
+          // Try to get current user - backend returns UserResponse directly
+          const userData = await authService.getCurrentUser();
+          console.log('✅ User fetched successfully:', userData);
+          setUser(userData);
+        } catch (error: any) {
+          console.log('❌ Error fetching user:', error.response?.status, error.response?.data);
+          
+          // If token expired, try to refresh
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            try {
+              console.log('🔄 Attempting to refresh token...');
+              await authService.refreshToken();
+              // After refresh, try again
+              const userData = await authService.getCurrentUser();
+              console.log('✅ User fetched after refresh:', userData);
+              setUser(userData);
+            } catch (refreshError) {
+              console.log('❌ Refresh failed, logging out...');
+              localStorage.removeItem('accessToken');
+              localStorage.removeItem('refreshToken');
+              setUser(null);
+            }
+          } else {
+            // Other error - clear tokens
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            setUser(null);
+          }
         }
+      } else {
+        console.log('⚠️ No tokens found, user not authenticated');
+        setUser(null);
       }
       setIsLoading(false);
     };
@@ -65,8 +88,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     try {
       const response = await authService.login({ email, password });
+      console.log('✅ Login successful:', response.user);
       setUser(response.user);
     } catch (error) {
+      console.error('❌ Login error:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -88,6 +113,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     try {
       const response = await authService.verifyOTP({ email, code });
+      console.log('✅ OTP verification successful:', response.user);
       setUser(response.user);
     } catch (error) {
       throw error;

@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyOTPPage from './pages/VerifyOTPPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
 
 function App() {
   return (
@@ -20,14 +21,8 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           
-          {/* Protected Routes - Will be added later */}
-          {/* <Route path="/dashboard" element={<DashboardLayout />}> */}
-          {/*   <Route index element={<DashboardHome />} /> */}
-          {/*   <Route path="resume" element={<ResumeUpload />} /> */}
-          {/*   <Route path="ats-score" element={<ATSScore />} /> */}
-          {/*   <Route path="interview" element={<InterviewSession />} /> */}
-          {/*   <Route path="profile" element={<Profile />} /> */}
-          {/* </Route> */}
+          {/* Protected Routes */}
+          <Route path="/dashboard" element={<DashboardPage />} />
         </Routes>
       </Router>
     </AuthProvider>

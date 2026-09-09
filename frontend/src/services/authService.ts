@@ -26,15 +26,29 @@ export interface ResetPasswordData {
   newPassword: string;
 }
 
+export interface User {
+  id: string;
+  fullName: string;
+  email: string;
+  emailVerified: boolean;
+}
+
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  user: {
-    id: string;
-    fullName: string;
-    email: string;
-    emailVerified: boolean;
-  };
+  user: User;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
+}
+
+export interface VerifyOtpResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
 }
 
 export const authService = {
@@ -45,20 +59,30 @@ export const authService = {
   },
 
   // Login user
-  login: async (data: LoginData): Promise<AuthResponse> => {
+  login: async (data: LoginData): Promise<LoginResponse> => {
     const response = await api.post('/auth/login', data);
-    const { accessToken, refreshToken } = response.data;
+    const { accessToken, refreshToken, user } = response.data;
+    
+    console.log('🔐 Login response:', response.data);
+    
+    // Store tokens in localStorage
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
+    
     return response.data;
   },
 
   // Verify OTP
-  verifyOTP: async (data: OTPVerifyData): Promise<AuthResponse> => {
+  verifyOTP: async (data: OTPVerifyData): Promise<VerifyOtpResponse> => {
     const response = await api.post('/auth/otp/verify', data);
-    const { accessToken, refreshToken } = response.data;
+    const { accessToken, refreshToken, user } = response.data;
+    
+    console.log('✅ OTP verify response:', response.data);
+    
+    // Store tokens in localStorage
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
+    
     return response.data;
   },
 
@@ -83,10 +107,17 @@ export const authService = {
   // Refresh Token
   refreshToken: async (): Promise<{ accessToken: string; refreshToken: string }> => {
     const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
     const response = await api.post('/auth/refresh', { refreshToken });
     const { accessToken, refreshToken: newRefreshToken } = response.data;
+    
+    console.log('🔄 Refresh token response:', response.data);
+    
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', newRefreshToken);
+    
     return response.data;
   },
 
@@ -100,9 +131,13 @@ export const authService = {
     }
   },
 
-  // Get current user
-  getCurrentUser: async (): Promise<{ user: AuthResponse['user'] }> => {
+  // Get current user - Backend returns UserResponse directly
+  getCurrentUser: async (): Promise<User> => {
     const response = await api.get('/users/me');
+    console.log('👤 Get current user response:', response.data);
+    
+    // Backend returns UserResponse directly (id, fullName, email, emailVerified)
+    // No wrapping in a "user" property
     return response.data;
   },
 };

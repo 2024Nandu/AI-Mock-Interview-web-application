@@ -2,11 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const VerifyOTPPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email || 'your email';
+  const { verifyOTP, requestOTP } = useAuth();
+  
+  const email = location.state?.email || '';
+  const isPasswordReset = location.state?.isPasswordReset || false;
   
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,6 +19,13 @@ const VerifyOTPPage = () => {
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Redirect if no email
+  useEffect(() => {
+    if (!email) {
+      navigate('/register');
+    }
+  }, [email, navigate]);
 
   useEffect(() => {
     if (timer > 0) {
@@ -34,7 +45,6 @@ const VerifyOTPPage = () => {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -57,7 +67,6 @@ const VerifyOTPPage = () => {
       }
     });
     setOtp(newOtp);
-    // Focus last filled input
     const lastIndex = digits.length - 1;
     if (lastIndex < 6) {
       inputRefs.current[lastIndex]?.focus();
@@ -76,18 +85,23 @@ const VerifyOTPPage = () => {
 
     setIsLoading(true);
 
-    // TODO: Connect to backend API
-    // POST /api/v1/auth/otp/verify
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('OTP Verification:', { email, code: otpCode });
-      setSuccess(true);
-      // On success, redirect to dashboard after delay
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
-    } catch (err) {
-      setError('Invalid OTP code. Please try again.');
+      if (isPasswordReset) {
+        // For password reset - redirect to reset password page with OTP
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/reset-password', { state: { email, otpCode } });
+        }, 1500);
+      } else {
+        // For email verification - verify OTP and login
+        await verifyOTP(email, otpCode);
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Invalid OTP code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -98,13 +112,10 @@ const VerifyOTPPage = () => {
     setCanResend(false);
     setError('');
     
-    // TODO: Connect to backend API
-    // POST /api/v1/auth/otp/request
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Resend OTP:', { email });
-    } catch (err) {
-      setError('Failed to resend OTP. Please try again.');
+      await requestOTP(email);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to resend OTP. Please try again.');
     }
   };
 
@@ -126,10 +137,14 @@ const VerifyOTPPage = () => {
               Mock<span className="text-green-600">Interview</span>
             </span>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Verify Your Email</h2>
+          <h2 className="text-3xl font-bold text-gray-900">
+            {isPasswordReset ? 'Reset Password' : 'Verify Your Email'}
+          </h2>
           <p className="text-gray-600 mt-2">
-            We sent a 6-digit code to{' '}
-            <span className="font-medium text-gray-900">{email}</span>
+            {isPasswordReset 
+              ? `Enter the 6-digit code sent to ${email} to reset your password`
+              : `We sent a 6-digit code to ${email}`
+            }
           </p>
         </div>
 
@@ -144,8 +159,15 @@ const VerifyOTPPage = () => {
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-10 h-10 text-green-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Email Verified!</h3>
-              <p className="text-gray-600">Redirecting to dashboard...</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                {isPasswordReset ? 'Code Verified!' : 'Email Verified!'}
+              </h3>
+              <p className="text-gray-600">
+                {isPasswordReset 
+                  ? 'Redirecting to reset password...' 
+                  : 'Redirecting to dashboard...'
+                }
+              </p>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -217,19 +239,30 @@ const VerifyOTPPage = () => {
                   </>
                 ) : (
                   <>
-                    Verify Email
+                    {isPasswordReset ? 'Verify Code' : 'Verify Email'}
                     <ArrowRight className="w-5 h-5" />
                   </>
                 )}
               </button>
 
-              {/* Back to Login */}
-              <p className="text-center text-gray-600 text-sm">
-                Wrong email?{' '}
-                <Link to="/register" className="text-green-600 font-medium hover:text-green-700">
-                  Go back to Register
-                </Link>
-              </p>
+              {/* Back Links */}
+              <div className="text-center space-y-2">
+                {isPasswordReset ? (
+                  <p className="text-sm text-gray-600">
+                    Remember your password?{' '}
+                    <Link to="/login" className="text-green-600 font-medium hover:text-green-700">
+                      Back to Login
+                    </Link>
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-600">
+                    Wrong email?{' '}
+                    <Link to="/register" className="text-green-600 font-medium hover:text-green-700">
+                      Go back to Register
+                    </Link>
+                  </p>
+                )}
+              </div>
             </form>
           )}
         </div>

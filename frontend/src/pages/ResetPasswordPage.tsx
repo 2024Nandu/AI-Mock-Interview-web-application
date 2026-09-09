@@ -8,7 +8,8 @@ const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { resetPassword } = useAuth();
-  const email = location.state?.email || 'your email';
+  
+  const email = location.state?.email || '';
   const otpCode = location.state?.otpCode || '';
   
   const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +21,13 @@ const ResetPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // Redirect if no email or OTP
+  useState(() => {
+    if (!email || !otpCode) {
+      navigate('/forgot-password');
+    }
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -58,6 +66,10 @@ const ResetPasswordPage = () => {
       setIsLoading(false);
     }
   };
+
+  if (!email || !otpCode) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-50 to-emerald-50 flex items-center justify-center px-4 py-12">

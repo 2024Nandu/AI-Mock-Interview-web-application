@@ -16,7 +16,7 @@ const LoginPage = () => {
   const [popupProvider, setPopupProvider] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // ✅ Prevent page refresh
     setError('');
     setIsLoading(true);
 
@@ -24,7 +24,10 @@ const LoginPage = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      // ✅ Show specific error message from backend
+      const errorMessage = err.response?.data?.message || 'Invalid email or password';
+      setError(errorMessage);
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }

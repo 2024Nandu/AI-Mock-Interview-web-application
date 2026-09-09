@@ -28,9 +28,14 @@ const ForgotPasswordPage = () => {
       await forgotPassword(email);
       setSuccess(true);
       
-      // Redirect to OTP verification after 2 seconds
+      // Redirect to OTP verification with password reset flag
       setTimeout(() => {
-        navigate('/verify-otp', { state: { email, isPasswordReset: true } });
+        navigate('/verify-otp', { 
+          state: { 
+            email, 
+            isPasswordReset: true 
+          } 
+        });
       }, 2000);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to send reset link. Please try again.');
